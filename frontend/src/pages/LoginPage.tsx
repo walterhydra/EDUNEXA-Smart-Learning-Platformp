@@ -30,20 +30,98 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [successMessage, setSuccessMessage] = useState('');
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
 
-  const handleFillDemoStudent = () => {
+  const handleFillDemoStudent = async () => {
     setEmailOrUsername('student@edunexa.ai');
     setPassword('StudentPass123!');
     setName('Alex Chen');
     setRole('STUDENT');
     setError('');
+    setIsLoading(true);
+
+    try {
+      let { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: 'student@edunexa.ai',
+        password: 'StudentPass123!',
+      });
+
+      if (signInError) {
+        const { data: signUpData } = await supabase.auth.signUp({
+          email: 'student@edunexa.ai',
+          password: 'StudentPass123!',
+          options: { data: { full_name: 'Alex Chen', role: 'STUDENT' } },
+        });
+
+        if (signUpData?.user) {
+          await supabase.from('profiles').upsert({
+            id: signUpData.user.id,
+            email: 'student@edunexa.ai',
+            name: 'Alex Chen',
+            role: 'STUDENT',
+          });
+          signInData = { user: signUpData.user } as any;
+        }
+      }
+
+      setSuccessMessage('Welcome back, Alex Chen! Opening dashboard...');
+      const targetUser = signInData?.user || {
+        email: 'student@edunexa.ai',
+        user_metadata: { full_name: 'Alex Chen', role: 'STUDENT' },
+      };
+      if (onLoginSuccess) {
+        setTimeout(() => onLoginSuccess(targetUser), 400);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Demo student login failed.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleFillDemoAdmin = () => {
+  const handleFillDemoAdmin = async () => {
     setEmailOrUsername('admin@edunexa.ai');
     setPassword('AdminPass123!');
     setName('Dr. Sarah Vance');
     setRole('ADMIN');
     setError('');
+    setIsLoading(true);
+
+    try {
+      let { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email: 'admin@edunexa.ai',
+        password: 'AdminPass123!',
+      });
+
+      if (signInError) {
+        const { data: signUpData } = await supabase.auth.signUp({
+          email: 'admin@edunexa.ai',
+          password: 'AdminPass123!',
+          options: { data: { full_name: 'Dr. Sarah Vance', role: 'ADMIN' } },
+        });
+
+        if (signUpData?.user) {
+          await supabase.from('profiles').upsert({
+            id: signUpData.user.id,
+            email: 'admin@edunexa.ai',
+            name: 'Dr. Sarah Vance',
+            role: 'ADMIN',
+          });
+          signInData = { user: signUpData.user } as any;
+        }
+      }
+
+      setSuccessMessage('Welcome back, Dr. Sarah Vance! Opening dashboard...');
+      const targetUser = signInData?.user || {
+        email: 'admin@edunexa.ai',
+        user_metadata: { full_name: 'Dr. Sarah Vance', role: 'ADMIN' },
+      };
+      if (onLoginSuccess) {
+        setTimeout(() => onLoginSuccess(targetUser), 400);
+      }
+    } catch (err: any) {
+      setError(err.message || 'Demo admin login failed.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
