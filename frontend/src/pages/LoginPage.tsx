@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Brain,
+  BookOpenCheck,
   Mail,
   Eye,
   EyeOff,
@@ -8,6 +8,7 @@ import {
   AlertCircle,
   GraduationCap,
   Building2,
+  Sparkles,
 } from 'lucide-react';
 import bgVideo from '../assets/b8bd4e4273cceae2889d9d259b04f732.mp4';
 import { ForgotPasswordModal } from '../components/ForgotPasswordModal';
@@ -25,7 +26,7 @@ export const LoginPage: React.FC = () => {
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
 
   const handleFillDemoStudent = () => {
-    setEmailOrUsername('student@skillsense.ai');
+    setEmailOrUsername('student@edunexa.ai');
     setPassword('StudentPass123!');
     setName('Alex Chen');
     setRole('STUDENT');
@@ -33,7 +34,7 @@ export const LoginPage: React.FC = () => {
   };
 
   const handleFillDemoAdmin = () => {
-    setEmailOrUsername('admin@skillsense.ai');
+    setEmailOrUsername('admin@edunexa.ai');
     setPassword('AdminPass123!');
     setName('Dr. Sarah Vance');
     setRole('ADMIN');
@@ -66,10 +67,10 @@ export const LoginPage: React.FC = () => {
       setIsLoading(false);
       if (authMode === 'login') {
         setSuccessMessage(
-          `Welcome back! Logged in as ${role === 'ADMIN' ? 'Administrator' : 'Student'}.`
+          `Welcome to EDUNEXA! Logged in as ${role === 'ADMIN' ? 'Administrator' : 'Student'}.`
         );
       } else {
-        setSuccessMessage('Account created successfully!');
+        setSuccessMessage('EDUNEXA Account created successfully!');
       }
     }, 1000);
   };
@@ -79,29 +80,34 @@ export const LoginPage: React.FC = () => {
       {/* LEFT PORTION — 62% Width Expanded Login Section */}
       <div className="w-full lg:w-[62%] h-full flex flex-col justify-between p-6 lg:px-16 lg:py-6 bg-white overflow-y-auto">
         
-        {/* Top Header Logo */}
-        <div className="flex items-center gap-2.5 shrink-0">
-          <div className="p-2 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-600">
-            <Brain className="w-6 h-6" />
+        {/* Top Header Logo with Book Icon */}
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="p-2.5 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-700 text-white rounded-2xl shadow-md shadow-indigo-500/20 flex items-center justify-center">
+            <BookOpenCheck className="w-6 h-6" />
           </div>
-          <span className="text-xl font-bold tracking-tight text-slate-900 font-sans italic">
-            SkillSense
-          </span>
+          <div>
+            <span className="text-2xl font-extrabold tracking-wider text-slate-900 font-serif uppercase">
+              EDUNEXA
+            </span>
+            <span className="block text-[10px] font-bold uppercase tracking-widest text-indigo-600">
+              Smart Education Platform
+            </span>
+          </div>
         </div>
 
-        {/* Centered Main Form Container — Expanded to max-w-md (448px) */}
+        {/* Centered Main Form Container */}
         <div className="w-full max-w-md mx-auto my-auto py-3">
           
           {/* Top Brand Circle Icon */}
           <div className="flex justify-center mb-3">
-            <div className="w-12 h-12 rounded-full bg-pink-50 border border-pink-100 flex items-center justify-center text-pink-500 shadow-xs">
-              <Brain className="w-6 h-6" />
+            <div className="w-12 h-12 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-xs">
+              <BookOpenCheck className="w-6 h-6" />
             </div>
           </div>
 
           {/* Heading */}
           <h1 className="text-2xl font-bold text-center text-slate-900 mb-4">
-            {authMode === 'login' ? 'Welcome back' : 'Create your account'}
+            {authMode === 'login' ? 'Welcome back' : 'Create your EDUNEXA account'}
           </h1>
 
           {/* Role Access Selector */}
@@ -254,7 +260,7 @@ export const LoginPage: React.FC = () => {
 
           {/* Terms & Privacy */}
           <p className="text-xs text-slate-400 text-center mt-4">
-            By continuing, you agree to our{' '}
+            By continuing, you agree to EDUNEXA's{' '}
             <a href="#" className="underline text-slate-600 hover:text-slate-900">
               Terms
             </a>{' '}
@@ -305,15 +311,17 @@ export const LoginPage: React.FC = () => {
             <button
               type="button"
               onClick={handleFillDemoStudent}
-              className="py-1 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold rounded-full transition-all"
+              className="py-1 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold rounded-full transition-all flex items-center gap-1"
             >
+              <Sparkles className="w-3 h-3 text-indigo-500" />
               Demo Student
             </button>
             <button
               type="button"
               onClick={handleFillDemoAdmin}
-              className="py-1 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold rounded-full transition-all"
+              className="py-1 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold rounded-full transition-all flex items-center gap-1"
             >
+              <Sparkles className="w-3 h-3 text-purple-500" />
               Demo Admin
             </button>
           </div>
@@ -321,11 +329,11 @@ export const LoginPage: React.FC = () => {
 
         {/* Bottom Footer */}
         <div className="text-xs text-slate-400 text-center lg:text-left shrink-0">
-          © 2026 SkillSense AI
+          © 2026 EDUNEXA Platform. All rights reserved.
         </div>
       </div>
 
-      {/* RIGHT PORTION — 38% Reduced Width Background Video Container */}
+      {/* RIGHT PORTION — 38% Width Background Video Container */}
       <div className="hidden lg:block lg:w-[38%] h-full max-h-screen relative bg-slate-950 overflow-hidden">
         <video
           src={bgVideo}
