@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { LoginPage } from './pages/LoginPage';
-import { supabase } from './lib/supabase';
+import React, { useEffect, useState } from 'react';
 import { useApp } from './context/AppContext';
+import { LoginPage } from './pages/LoginPage';
 import { OnboardingWizard } from './components/onboarding/OnboardingWizard';
 import { Navbar } from './components/layout/Navbar';
 import { Sidebar } from './components/layout/Sidebar';
+import { supabase } from './lib/supabase';
 
 // 14 Module Views from edunexa 1
 import { DashboardOverview } from './components/dashboard/DashboardOverview';
@@ -24,21 +24,73 @@ import { MyProfile } from './components/profile/MyProfile';
 
 import { CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 
-function MainDashboardShell({ onLogout }: { onLogout: () => void }) {
+export const App = () => {
   const { 
     user, 
+    setUser,
     isAuthenticated, 
+    setIsAuthenticated, 
     activeTab, 
-    toastMessage,
-    logout: appLogout
+    toastMessage 
   } = useApp();
 
   const [isOnboarding, setIsOnboarding] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [onboardingInitialData, setOnboardingInitialData] = useState({});
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
-  // 1. If user is running the 6-Step Onboarding Wizard
-  if (isOnboarding || (!user?.onboardingCompleted && isAuthenticated)) {
+  // Sync Supabase Auth session with AppContext
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setIsAuthenticated(true);
+        setUser((prev: any) => ({
+          ...prev,
+          name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Learner',
+          email: session.user.email || '',
+        }));
+      }
+      setIsAuthLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setIsAuthenticated(true);
+        setUser((prev: any) => ({
+          ...prev,
+          name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Learner',
+          email: session.user.email || '',
+        }));
+      } else {
+        setIsAuthenticated(false);
+      }
+      setIsAuthLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [setIsAuthenticated, setUser]);
+
+  // Triggered when user wants to start fresh onboarding
+  const handleStartOnboarding = (initialData = {}) => {
+    setOnboardingInitialData(initialData);
+    setIsOnboarding(true);
+  };
+
+  if (isAuthLoading) {
+    return (
+      <div className="h-screen w-screen bg-slate-950 text-white flex items-center justify-center font-sans">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
+          <p className="text-xs text-slate-400 font-semibold tracking-wider uppercase">Loading EDUNEXA Platform...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If user is currently running the 6-Step Onboarding Wizard
+  if (isOnboarding || (!user?.onboardingCompleted && isAuthenticated && false)) {
     return (
       <OnboardingWizard 
         initialData={onboardingInitialData} 
@@ -47,7 +99,23 @@ function MainDashboardShell({ onLogout }: { onLogout: () => void }) {
     );
   }
 
-  // 2. Render current active tab component out of 14 modules
+  // If not authenticated, show Login & Signup Page
+  if (!isAuthenticated) {
+    return (
+      <LoginPage 
+        onLoginSuccess={(u) => {
+          setIsAuthenticated(true);
+          setUser((prev: any) => ({
+            ...prev,
+            name: u.user_metadata?.full_name || u.email?.split('@')[0] || 'Learner',
+            email: u.email || '',
+          }));
+        }} 
+      />
+    );
+  }
+
+  // Render current active tab component out of 14 modules
   const renderActiveModule = () => {
     switch (activeTab) {
       case 'dashboard':
@@ -85,7 +153,7 @@ function MainDashboardShell({ onLogout }: { onLogout: () => void }) {
 
   return (
     <div className="flex h-screen bg-[#f8fafc] text-slate-800 overflow-hidden font-sans">
-      {/* 14-Module Sidebar Navigation (Matches Second Photo) */}
+      {/* 14-Module Sidebar Navigation (edunexa 1 UI) */}
       <Sidebar 
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)} 
@@ -117,73 +185,6 @@ function MainDashboardShell({ onLogout }: { onLogout: () => void }) {
       )}
     </div>
   );
-}
-
-export function App() {
-  const [supabaseUser, setSupabaseUser] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const { setIsAuthenticated, setUser: setAppContextUser } = useApp();
-
-  useEffect(() => {
-    // Fetch active Supabase session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setSupabaseUser(session.user);
-        setIsAuthenticated(true);
-      }
-      setIsLoading(false);
-    });
-
-    // Subscribe to auth state changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        setSupabaseUser(session.user);
-        setIsAuthenticated(true);
-      } else {
-        setSupabaseUser(null);
-        setIsAuthenticated(false);
-      }
-      setIsLoading(false);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [setIsAuthenticated]);
-
-  if (isLoading) {
-    return (
-      <div className="h-screen w-screen bg-slate-950 text-white flex items-center justify-center font-sans">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
-          <p className="text-xs text-slate-400 font-semibold tracking-wider uppercase">Loading EDUNEXA...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Render Second Photo UI (edunexa 1 Dashboard) when logged in
-  if (supabaseUser) {
-    return <MainDashboardShell onLogout={() => setSupabaseUser(null)} />;
-  }
-
-  return (
-    <LoginPage
-      onLoginSuccess={(u) => {
-        setSupabaseUser(u);
-        setIsAuthenticated(true);
-        if (u?.email) {
-          setAppContextUser((prev: any) => ({
-            ...prev,
-            email: u.email,
-            name: u.user_metadata?.full_name || u.email.split('@')[0],
-          }));
-        }
-      }}
-    />
-  );
-}
+};
 
 export default App;
