@@ -3,8 +3,10 @@ import { describe, it, expect } from 'vitest';
 import App from './App';
 
 describe('App', () => {
-  it('renders SkillSense AI title', () => {
+  it('renders SkillSense AI title elements', () => {
     render(<App />);
-    expect(screen.getByText(/SkillSense AI/i)).toBeInTheDocument();
+    const titleElements = screen.getAllByText(/SkillSense AI/i);
+    expect(titleElements.length).toBeGreaterThan(0);
+    expect(titleElements[0]).toBeInTheDocument();
   });
 });
