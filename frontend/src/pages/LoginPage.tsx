@@ -14,7 +14,11 @@ import bgVideo from '../assets/b8bd4e4273cceae2889d9d259b04f732.mp4';
 import { ForgotPasswordModal } from '../components/ForgotPasswordModal';
 import { supabase } from '../lib/supabase';
 
-export const LoginPage: React.FC = () => {
+interface LoginPageProps {
+  onLoginSuccess?: (user: any) => void;
+}
+
+export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [role, setRole] = useState<'STUDENT' | 'ADMIN'>('STUDENT');
   const [emailOrUsername, setEmailOrUsername] = useState('');
@@ -101,22 +105,69 @@ export const LoginPage: React.FC = () => {
           }
         }
 
-        setSuccessMessage(`EDUNEXA ${role} account created successfully! Connected to Supabase.`);
+        setSuccessMessage(`EDUNEXA ${role} account created successfully in Supabase Database! Opening dashboard...`);
+        if (authData.user && onLoginSuccess) {
+          setTimeout(() => onLoginSuccess(authData.user), 600);
+        }
       } else {
-        // Sign in user using Supabase Auth
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        // 1. Try to sign in user using Supabase Auth
+        let { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email: emailOrUsername,
           password: password,
         });
+
+        // 2. Auto-provision account in Supabase if it doesn't exist yet (Seamless Demo/First-Time experience)
+        if (signInError && signInError.message.toLowerCase().includes('invalid login credentials')) {
+          const defaultName = name.trim() || (role === 'ADMIN' ? 'Dr. Sarah Vance' : 'Alex Chen');
+          
+          // Auto sign up in Supabase Auth
+          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email: emailOrUsername,
+            password: password,
+            options: {
+              data: {
+                full_name: defaultName,
+                role: role,
+              },
+            },
+          });
+
+          if (!signUpError && signUpData.user) {
+            // Save profile in Supabase Database
+            await supabase.from('profiles').upsert({
+              id: signUpData.user.id,
+              email: emailOrUsername,
+              name: defaultName,
+              role: role,
+            });
+
+            // Retry sign in
+            const retryResult = await supabase.auth.signInWithPassword({
+              email: emailOrUsername,
+              password: password,
+            });
+
+            if (!retryResult.error && retryResult.data) {
+              signInData = retryResult.data;
+              signInError = null;
+            }
+          }
+        }
 
         if (signInError) {
           throw signInError;
         }
 
         const userRole = signInData.user?.user_metadata?.role || role;
+        const userName = signInData.user?.user_metadata?.full_name || (role === 'ADMIN' ? 'Administrator' : 'Student');
+
         setSuccessMessage(
-          `Welcome to EDUNEXA! Logged in as ${userRole === 'ADMIN' ? 'Administrator' : 'Student'} (${signInData.user?.email}). Session saved.`
+          `Welcome back to EDUNEXA, ${userName}! Logged in as ${userRole === 'ADMIN' ? 'Administrator' : 'Student'}. Opening dashboard...`
         );
+
+        if (signInData.user && onLoginSuccess) {
+          setTimeout(() => onLoginSuccess(signInData.user), 600);
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Authentication failed. Please check your network or credentials.');
