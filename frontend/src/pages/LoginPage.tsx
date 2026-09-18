@@ -76,7 +76,7 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="h-screen w-screen max-h-screen max-w-vw overflow-hidden flex bg-white text-slate-900 font-sans">
-      {/* LEFT SIDE — Login & Sign In Section (58% Width on Desktop) */}
+      {/* LEFT SIDE — Wider Login & Sign In Section (58% Width on Desktop) */}
       <div className="w-full lg:w-[58%] h-full flex flex-col justify-between p-6 lg:px-16 lg:py-6 bg-white overflow-y-auto relative z-10">
         
         {/* Top Header Logo */}
@@ -325,11 +325,11 @@ export const LoginPage: React.FC = () => {
         </div>
       </div>
 
-      {/* RIGHT SIDE — Video Section with Smooth Faded Gradient Overlay Edge */}
+      {/* RIGHT SIDE — Video Section with Smooth Soft Faded Gradient Mask on Left Edge */}
       <div className="hidden lg:block lg:w-[42%] h-full max-h-screen relative bg-slate-950 overflow-hidden">
-        {/* Soft Faded Gradient Mask on the Left Edge of the Video Container */}
-        <div className="absolute top-0 bottom-0 left-0 w-32 bg-gradient-to-r from-white via-white/50 to-transparent z-20 pointer-events-none" />
-        
+        {/* Soft Faded Gradient Overlay to eliminate hard dividing line */}
+        <div className="absolute inset-y-0 left-0 w-36 bg-gradient-to-r from-white via-white/80 via-white/20 to-transparent z-20 pointer-events-none" />
+
         <video
           src={bgVideo}
           autoPlay
