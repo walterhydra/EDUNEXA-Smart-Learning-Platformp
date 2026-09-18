@@ -1,0 +1,12 @@
+version: '3.9'
+
+services:
+  vite-app:
+    build: .
+    ports:
+      - "4173:4173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=production
