@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import bgVideo from '../assets/b8bd4e4273cceae2889d9d259b04f732.mp4';
 import { ForgotPasswordModal } from '../components/ForgotPasswordModal';
+import { supabase } from '../lib/supabase';
 
 export const LoginPage: React.FC = () => {
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
@@ -41,10 +42,15 @@ export const LoginPage: React.FC = () => {
     setError('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccessMessage('');
+
+    if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+      setError('Supabase environment variables not loaded. Please restart your frontend terminal (npm run dev).');
+      return;
+    }
 
     if (!emailOrUsername.trim()) {
       setError('Please enter your email or username');
@@ -56,31 +62,75 @@ export const LoginPage: React.FC = () => {
       return;
     }
 
-    if (authMode === 'register' && !name) {
+    if (authMode === 'register' && !name.trim()) {
       setError('Please enter your full name');
       return;
     }
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
-      if (authMode === 'login') {
-        setSuccessMessage(
-          `Welcome to EDUNEXA! Logged in as ${role === 'ADMIN' ? 'Administrator' : 'Student'}.`
-        );
+    try {
+      if (authMode === 'register') {
+        // 1. Sign up user in Supabase Auth
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
+          email: emailOrUsername,
+          password: password,
+          options: {
+            data: {
+              full_name: name,
+              role: role,
+            },
+          },
+        });
+
+        if (signUpError) {
+          throw signUpError;
+        }
+
+        // 2. Save user profile into Supabase Database (profiles table)
+        if (authData.user) {
+          const { error: profileError } = await supabase.from('profiles').upsert({
+            id: authData.user.id,
+            email: emailOrUsername,
+            name: name,
+            role: role,
+          });
+
+          if (profileError) {
+            console.warn('Profile table insert warning:', profileError.message);
+          }
+        }
+
+        setSuccessMessage(`EDUNEXA ${role} account created successfully! Connected to Supabase.`);
       } else {
-        setSuccessMessage('EDUNEXA Account created successfully!');
+        // Sign in user using Supabase Auth
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: emailOrUsername,
+          password: password,
+        });
+
+        if (signInError) {
+          throw signInError;
+        }
+
+        const userRole = signInData.user?.user_metadata?.role || role;
+        setSuccessMessage(
+          `Welcome to EDUNEXA! Logged in as ${userRole === 'ADMIN' ? 'Administrator' : 'Student'} (${signInData.user?.email}). Session saved.`
+        );
       }
-    }, 1000);
+    } catch (err: any) {
+      setError(err.message || 'Authentication failed. Please check your network or credentials.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="h-screen w-screen max-h-screen max-w-vw overflow-hidden flex bg-white text-slate-900 font-sans">
-      {/* LEFT PORTION — 62% Width Expanded Login Section */}
+      {/* LEFT PORTION — Login Section */}
       <div className="w-full lg:w-[62%] h-full flex flex-col justify-between p-6 lg:px-16 lg:py-6 bg-white overflow-y-auto">
         
-        {/* Top Header Logo with Book Icon */}
+        {/* Top Header Logo */}
         <div className="flex items-center gap-3 shrink-0">
           <div className="p-2.5 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-700 text-white rounded-2xl shadow-md shadow-indigo-500/20 flex items-center justify-center">
             <BookOpenCheck className="w-6 h-6" />
@@ -205,10 +255,10 @@ export const LoginPage: React.FC = () => {
             <div>
               <div className="relative">
                 <input
-                  type="text"
+                  type="email"
                   value={emailOrUsername}
                   onChange={(e) => setEmailOrUsername(e.target.value)}
-                  placeholder="Enter email or username"
+                  placeholder="Enter email address"
                   className="w-full pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-800 focus:ring-1 focus:ring-slate-800 transition-all"
                 />
                 <Mail className="w-4 h-4 text-emerald-500 absolute right-3.5 top-3.5" />
@@ -252,8 +302,10 @@ export const LoginPage: React.FC = () => {
             >
               {isLoading ? (
                 <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+              ) : authMode === 'login' ? (
+                'Sign In & Connect'
               ) : (
-                'Continue'
+                'Create Account & Connect'
               )}
             </button>
           </form>
@@ -333,7 +385,7 @@ export const LoginPage: React.FC = () => {
         </div>
       </div>
 
-      {/* RIGHT PORTION — 38% Width Background Video Container */}
+      {/* RIGHT PORTION — Background Video Container */}
       <div className="hidden lg:block lg:w-[38%] h-full max-h-screen relative bg-slate-950 overflow-hidden">
         <video
           src={bgVideo}
