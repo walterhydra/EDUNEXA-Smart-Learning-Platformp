@@ -9,6 +9,7 @@ import {
   GraduationCap,
   Building2,
 } from 'lucide-react';
+import bgVideo from '../assets/b8bd4e4273cceae2889d9d259b04f732.mp4';
 import { ForgotPasswordModal } from '../components/ForgotPasswordModal';
 
 export const LoginPage: React.FC = () => {
@@ -75,7 +76,7 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="h-screen w-screen max-h-screen max-w-vw overflow-hidden flex bg-white text-slate-900 font-sans">
-      {/* LEFT HALF — 50% Width Login & Sign In (Fits 100% in 1 screen) */}
+      {/* LEFT HALF — 50% Width Login & Sign In Section */}
       <div className="w-full lg:w-1/2 h-full flex flex-col justify-between p-5 lg:px-12 lg:py-5 bg-white overflow-y-auto">
         
         {/* Top Header Logo */}
@@ -324,11 +325,14 @@ export const LoginPage: React.FC = () => {
         </div>
       </div>
 
-      {/* RIGHT HALF — 50% Width Full Height Image (No scrollbar, object-cover) */}
+      {/* RIGHT HALF — 50% Width Full Screen Background Video (No unnatural zoom) */}
       <div className="hidden lg:block lg:w-1/2 h-full max-h-screen relative bg-slate-950 overflow-hidden">
-        <img
-          src="/image.png"
-          alt="SkillSense AI Cover"
+        <video
+          src={bgVideo}
+          autoPlay
+          loop
+          muted
+          playsInline
           className="w-full h-full object-cover object-center"
         />
       </div>
