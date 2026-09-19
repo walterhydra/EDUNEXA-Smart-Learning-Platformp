@@ -68,25 +68,27 @@ const PREFERENCE_OPTIONS = [
 ];
 
 export const OnboardingWizard = ({ initialData = {}, onComplete }) => {
-  const { completeOnboarding } = useApp();
+  const { completeOnboarding, user } = useApp();
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationPhase, setGenerationPhase] = useState('Analyzing skill matrix...');
 
-  // Form states
+  // Form states aligned with mandatory onboarding requirements
   const [formData, setFormData] = useState({
-    name: initialData.name || 'Aarav Sharma',
-    education: initialData.education || 'Undergraduate',
-    college: initialData.college || 'National Institute of Technology',
-    degree: initialData.degree || 'B.Tech Computer Science & Engineering',
-    year: initialData.year || '3rd Year (2025)',
+    name: initialData.name || user?.name || '',
+    education: initialData.education || 'Undergraduate (B.Tech / B.E / B.Sc / BCA)',
+    college: initialData.college || '',
+    degree: initialData.degree || '',
+    year: initialData.year || '3rd Year (Junior)',
     interests: ['Web Development', 'AI / ML'],
     currentSkills: [
-      { name: 'JavaScript', level: 'Intermediate', score: 65 },
+      { name: 'JavaScript', level: 'Beginner', score: 40 },
       { name: 'React', level: 'Beginner', score: 40 },
       { name: 'Python', level: 'Intermediate', score: 70 },
-      { name: 'SQL', level: 'Beginner', score: 45 },
+      { name: 'SQL', level: 'Beginner', score: 40 },
+      { name: 'Node.js', level: 'Beginner', score: 40 },
+      { name: 'Data Structures', level: 'Beginner', score: 40 },
     ],
     careerGoal: 'Full Stack Developer',
     learningAvailability: '1 hour/day',
@@ -175,8 +177,11 @@ export const OnboardingWizard = ({ initialData = {}, onComplete }) => {
       setGenerationPhase('Personalized EduNexa Workspace ready!');
       setTimeout(() => {
         completeOnboarding(formData);
-      }, 700);
-    }, 2900);
+        if (typeof onComplete === 'function') {
+          onComplete();
+        }
+      }, 500);
+    }, 2500);
   };
 
   if (isGenerating) {

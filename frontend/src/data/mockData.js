@@ -27,7 +27,7 @@ export const INITIAL_USER_PROFILE = {
   learningAvailability: "1 hour/day",
   learningPreference: ["Videos", "Practical Coding", "Projects"],
   streakDays: 7,
-  xpPoints: 3420,
+  xpPoints: 3440,
   level: 4,
   rank: "Bronze Scholar",
   weeklyGoalHours: 7,

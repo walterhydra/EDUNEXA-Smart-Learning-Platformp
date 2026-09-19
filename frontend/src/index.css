@@ -1,38 +1,50 @@
 @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
-@import url('https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap');
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@900,800,700,600,500,400,300&display=swap');
 @import "tailwindcss";
 
-:root {
-  --font-satoshi: 'Satoshi', 'Quicksand', system-ui, -apple-system, sans-serif;
+@theme {
+  --font-sans: 'Quicksand', 'Satoshi', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Satoshi', 'Quicksand', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-quicksand: 'Quicksand', 'Satoshi', system-ui, -apple-system, sans-serif;
+  --font-satoshi: 'Satoshi', 'Quicksand', system-ui, -apple-system, sans-serif;
 }
 
-@layer base {
-  html, body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    overflow-x: hidden;
-    background-color: #f8fafc;
-    color: #0f172a;
-    font-family: var(--font-satoshi);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+:root {
+  --font-quicksand: 'Quicksand', 'Satoshi', system-ui, -apple-system, sans-serif;
+  --font-satoshi: 'Satoshi', 'Quicksand', system-ui, -apple-system, sans-serif;
+}
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-quicksand);
-    letter-spacing: -0.01em;
-  }
+/* Global Font Application across Whole UI */
+*, ::before, ::after {
+  font-family: 'Quicksand', 'Satoshi', system-ui, -apple-system, sans-serif;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  background-color: #f8fafc;
+  color: #0f172a;
+  font-family: 'Quicksand', 'Satoshi', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings & Main Titles use Satoshi font for high impact */
+h1, h2, h3, h4, h5, h6, .font-heading, .font-title {
+  font-family: 'Satoshi', 'Quicksand', system-ui, -apple-system, sans-serif !important;
+  letter-spacing: -0.015em;
+}
+
+/* Specific Font Classes */
+.font-quicksand {
+  font-family: 'Quicksand', 'Satoshi', system-ui, -apple-system, sans-serif !important;
 }
 
 .font-satoshi {
-  font-family: var(--font-satoshi);
-}
-
-.font-quicksand {
-  font-family: var(--font-quicksand);
+  font-family: 'Satoshi', 'Quicksand', system-ui, -apple-system, sans-serif !important;
 }
 
 /* Custom Mesh Background Utility */

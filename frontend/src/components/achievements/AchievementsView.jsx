@@ -13,11 +13,14 @@ import {
   Share2, 
   Zap, 
   Trophy,
-  Medal
+  Medal,
+  ExternalLink,
+  ShieldCheck,
+  GraduationCap
 } from 'lucide-react';
 
 export const AchievementsView = () => {
-  const { user, achievements, showToast } = useApp();
+  const { user, achievements, showToast, isCourseCompleted } = useApp();
   const [showCertificate, setShowCertificate] = useState(false);
 
   const leaderboard = [
@@ -29,32 +32,68 @@ export const AchievementsView = () => {
   ];
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 font-sans">
       {/* Header */}
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/90 shadow-soft flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-bold mb-2 border border-amber-100">
             <Trophy className="w-3.5 h-3.5" /> Gamified Rewards & Accolades
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            Achievements & Leaderboard
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-satoshi">
+            Achievements & Certificates
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-xl">
-            Earn skill badges, claim academic credentials, and climb the university student rankings.
+          <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-xl font-quicksand">
+            Earn skill badges, claim verified course completion certificates, and climb the student rankings.
           </p>
         </div>
 
         <button
           onClick={() => setShowCertificate(true)}
-          className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-indigo-600/20 shrink-0"
+          className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-md shadow-indigo-600/20 shrink-0 font-satoshi cursor-pointer active:scale-95 transition-all"
         >
-          <Award className="w-4 h-4" /> View AI Certified Transcript
+          <Award className="w-4 h-4" /> 📜 Open Verified Course Certificate
+        </button>
+      </div>
+
+      {/* FEATURED COURSE COMPLETION CERTIFICATE CARD */}
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white p-6 sm:p-8 rounded-3xl border border-indigo-500/30 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+        {/* Background Decorative Glow */}
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-600 text-slate-950 flex items-center justify-center font-black text-2xl shadow-xl shrink-0 border border-amber-300">
+            <GraduationCap className="w-9 h-9 text-slate-950" />
+          </div>
+
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold font-mono">
+                ✓ 100% COURSE COMPLETED
+              </span>
+              <span className="text-[10px] text-amber-300 font-bold flex items-center gap-1 font-mono">
+                <ShieldCheck className="w-3.5 h-3.5" /> AI VERIFIED CREDENTIAL
+              </span>
+            </div>
+            <h2 className="text-lg sm:text-xl font-black text-white font-satoshi tracking-tight">
+              {user.careerGoal || 'Full Stack Web Development & System Architecture'}
+            </h2>
+            <p className="text-xs text-indigo-200/80 font-quicksand font-medium max-w-lg">
+              Official EduNexa Master Certificate issued to <strong>{user.name || 'Aarav Sharma'}</strong> upon completing all curriculum modules, lab challenges, and capstone projects.
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setShowCertificate(true)}
+          className="w-full md:w-auto px-6 py-3.5 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-2xl text-xs font-black flex items-center justify-center gap-2 shadow-xl shadow-amber-400/20 shrink-0 font-satoshi cursor-pointer transform hover:scale-105 transition-all active:scale-95"
+        >
+          <Award className="w-4.5 h-4.5" /> 📜 Open & View Official Certificate
         </button>
       </div>
 
       {/* Badges Grid */}
       <div className="space-y-3">
-        <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+        <h2 className="text-base font-bold text-slate-900 flex items-center gap-2 font-satoshi">
           <Medal className="w-4 h-4 text-amber-500" /> Unlockable Milestone Badges
         </h2>
 
@@ -79,16 +118,16 @@ export const AchievementsView = () => {
                 </span>
               </div>
 
-              <h3 className="text-sm font-bold text-slate-900 mt-3">{ach.title}</h3>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">{ach.description}</p>
+              <h3 className="text-sm font-bold text-slate-900 mt-3 font-satoshi">{ach.title}</h3>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed font-quicksand">{ach.description}</p>
 
               <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
                 {ach.unlocked ? (
-                  <span className="text-emerald-600 font-bold flex items-center gap-1">
+                  <span className="text-emerald-600 font-bold flex items-center gap-1 font-satoshi">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Unlocked ({ach.unlockedDate})
                   </span>
                 ) : (
-                  <span className="text-slate-400 font-medium">Progress: {ach.progress}</span>
+                  <span className="text-slate-400 font-medium font-mono">Progress: {ach.progress}</span>
                 )}
               </div>
             </div>
@@ -100,12 +139,12 @@ export const AchievementsView = () => {
       <div className="white-card p-6 sm:p-8 rounded-3xl space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2 font-satoshi">
               <Trophy className="w-4 h-4 text-amber-500" /> Weekly Global University Leaderboard
             </h2>
-            <p className="text-xs text-slate-500">Rankings reset every Sunday at midnight</p>
+            <p className="text-xs text-slate-500 font-quicksand">Rankings reset every Sunday at midnight</p>
           </div>
-          <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
+          <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full font-satoshi">
             Your Rank: #4
           </span>
         </div>
@@ -136,14 +175,14 @@ export const AchievementsView = () => {
                 />
 
                 <div>
-                  <p className="text-xs font-bold text-slate-900">
+                  <p className="text-xs font-bold text-slate-900 font-satoshi">
                     {student.name} {student.isUser && <span className="text-[10px] text-indigo-600 font-extrabold">(You)</span>}
                   </p>
-                  <p className="text-[10px] text-slate-400">{student.role}</p>
+                  <p className="text-[10px] text-slate-400 font-quicksand">{student.role}</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 text-xs font-bold">
+              <div className="flex items-center gap-4 text-xs font-bold font-mono">
                 <span className="text-amber-600 flex items-center gap-1">
                   <Flame className="w-3.5 h-3.5 fill-amber-500" /> {student.streak}d
                 </span>
@@ -156,47 +195,82 @@ export const AchievementsView = () => {
         </div>
       </div>
 
-      {/* Certificate Modal */}
+      {/* CERTIFICATE MODAL */}
       {showCertificate && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 animate-in zoom-in-95">
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-2xl w-full p-6 sm:p-8 space-y-6 animate-in zoom-in-95 font-sans">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <span className="text-xs font-bold px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-lg">
-                EduNexa Verified Credential
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold px-3 py-1 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-200 font-mono">
+                  ✓ VERIFIED CREDENTIAL
+                </span>
+                <span className="text-xs font-bold text-slate-500">EduNexa AI Certification Suite</span>
+              </div>
               <button 
                 onClick={() => setShowCertificate(false)}
-                className="text-slate-400 hover:text-slate-700 text-lg font-bold"
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center cursor-pointer transition-colors"
               >
                 ✕
               </button>
             </div>
 
-            {/* Certificate Canvas Mock */}
-            <div className="p-8 rounded-3xl border-4 border-double border-indigo-200 bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 text-center space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center mx-auto shadow-md">
-                <Sparkles className="w-6 h-6" />
+            {/* High-Fidelity Certificate Canvas Mock */}
+            <div className="p-8 sm:p-10 rounded-3xl border-4 border-double border-amber-400/80 bg-gradient-to-br from-amber-50/40 via-white to-indigo-50/40 text-center space-y-4 relative shadow-inner">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-600 text-white flex items-center justify-center mx-auto shadow-lg border border-amber-300">
+                <Award className="w-8 h-8 text-white" />
               </div>
 
-              <p className="text-xs uppercase tracking-widest text-indigo-600 font-bold">Certificate of Competency</p>
-              <h3 className="text-2xl font-black text-slate-900">{user.name || 'Aarav Sharma'}</h3>
-              <p className="text-xs text-slate-600 max-w-md mx-auto">
-                Has successfully demonstrated technical proficiency in <strong>Modern ES6+ JavaScript, React Architecture, and Full Stack System Design</strong> as evaluated by the EduNexa AI Assessment Suite.
+              <div className="space-y-1">
+                <p className="text-xs font-black uppercase tracking-widest text-indigo-700 font-mono">EduNexa Smart Learning Platform</p>
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-wide uppercase font-satoshi">Certificate of Completion</h2>
+              </div>
+
+              <p className="text-xs text-slate-500 font-quicksand">This official credential certifies that</p>
+
+              <h3 className="text-2xl sm:text-3xl font-black text-indigo-900 border-b-2 border-amber-400 inline-block pb-1 font-satoshi px-4">
+                {user.name || 'Aarav Sharma'}
+              </h3>
+
+              <p className="text-xs text-slate-600 max-w-lg mx-auto font-quicksand leading-relaxed">
+                has successfully completed all requirements, practical assessments, and capstone implementations for the master curriculum in
+                <br />
+                <strong className="text-slate-900 text-sm font-satoshi">{user.careerGoal || 'Full Stack Web Development & System Architecture'}</strong>.
               </p>
 
-              <div className="pt-4 flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-200">
-                <span>Credential ID: EN-2025-8849</span>
-                <span>Issued: September 2025</span>
-                <span>Verified by EduNexa AI</span>
+              <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 border-t border-slate-200/80 gap-3 font-mono">
+                <div className="text-left">
+                  <p className="font-bold text-slate-800">Credential ID: EN-2025-8849</p>
+                  <p>Issued: September 2025</p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="w-10 h-10 bg-slate-900 rounded-lg p-1 text-white flex items-center justify-center font-bold text-[9px] text-center leading-none border border-slate-700">
+                    QR VERIFIED
+                  </div>
+                  <div className="text-right text-[10px]">
+                    <p className="font-bold text-emerald-700">Verified by EduNexa AI</p>
+                    <p className="text-slate-400">Authentic Digital Seal</p>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <div className="flex items-center justify-between pt-2">
               <button
-                onClick={() => showToast('📥 Certificate downloaded as PDF!', 'success')}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm"
+                onClick={() => {
+                  navigator.clipboard?.writeText("https://edunexa.io/verify/EN-2025-8849");
+                  showToast('🔗 Verification link copied to clipboard!', 'info');
+                }}
+                className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer font-satoshi"
               >
-                <Download className="w-4 h-4" /> Download PDF
+                <Share2 className="w-4 h-4" /> Share Credential Link
+              </button>
+
+              <button
+                onClick={() => showToast('📥 Official Certificate downloaded as PDF!', 'success')}
+                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer font-satoshi active:scale-95 transition-all"
+              >
+                <Download className="w-4 h-4" /> Download PDF Certificate
               </button>
             </div>
           </div>
@@ -205,3 +279,4 @@ export const AchievementsView = () => {
     </div>
   );
 };
+

@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from './context/AppContext';
+import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { OnboardingWizard } from './components/onboarding/OnboardingWizard';
 import { Navbar } from './components/layout/Navbar';
 import { Sidebar } from './components/layout/Sidebar';
+import { api } from './lib/api';
 import { supabase } from './lib/supabase';
 
-// 14 Module Views from edunexa 1
+// Module Views
 import { DashboardOverview } from './components/dashboard/DashboardOverview';
 import { LearningPathView } from './components/roadmap/LearningPathView';
 import { CareerNavigator } from './components/career/CareerNavigator';
@@ -14,13 +16,15 @@ import { SkillAssessment } from './components/assessment/SkillAssessment';
 import { SkillGapAnalysis } from './components/skillgap/SkillGapAnalysis';
 import { LearnCoursePlayer } from './components/learn/LearnCoursePlayer';
 import { AiMentorChat } from './components/mentor/AiMentorChat';
+import { LiveMentorInteraction } from './components/mentor/LiveMentorInteraction';
 import { PracticeLab } from './components/lab/PracticeLab';
+import { AnimationStudy } from './components/study/AnimationStudy';
 import { ProjectsHub } from './components/projects/ProjectsHub';
 import { MyProgress } from './components/progress/MyProgress';
 import { AchievementsView } from './components/achievements/AchievementsView';
 import { StudyPlanner } from './components/planner/StudyPlanner';
-import { ExploreResources } from './components/resources/ExploreResources';
 import { MyProfile } from './components/profile/MyProfile';
+import { JarvisAiAssistant } from './components/common/JarvisAiAssistant';
 
 import { CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 
@@ -30,6 +34,8 @@ export const App = () => {
     setUser,
     isAuthenticated, 
     setIsAuthenticated, 
+    viewMode,
+    setViewMode,
     activeTab, 
     toastMessage 
   } = useApp();
@@ -39,38 +45,47 @@ export const App = () => {
   const [onboardingInitialData, setOnboardingInitialData] = useState({});
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
-  // Sync Supabase Auth session with AppContext
+  // Sync Auth session with Express Backend JWT Token and Supabase
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setIsAuthenticated(true);
-        setUser((prev: any) => ({
-          ...prev,
-          name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Learner',
-          email: session.user.email || '',
-        }));
+    async function checkAuthSession() {
+      const storedToken = localStorage.getItem('edunexa_token');
+      if (storedToken) {
+        const res = await api.getMe(storedToken);
+        if (res.success && res.data?.user) {
+          setIsAuthenticated(true);
+          setViewMode('app');
+          setUser((prev: any) => ({
+            ...prev,
+            name: res.data.user.name || res.data.user.email?.split('@')[0] || 'Learner',
+            email: res.data.user.email || '',
+            role: res.data.user.role || 'STUDENT',
+          }));
+          setIsAuthLoading(false);
+          return;
+        }
       }
-      setIsAuthLoading(false);
-    });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        setIsAuthenticated(true);
-        setUser((prev: any) => ({
-          ...prev,
-          name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Learner',
-          email: session.user.email || '',
-        }));
-      } else {
-        setIsAuthenticated(false);
+      // Check Supabase as secondary source
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setIsAuthenticated(true);
+          setViewMode('app');
+          setUser((prev: any) => ({
+            ...prev,
+            name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'Learner',
+            email: session.user.email || '',
+          }));
+        }
+      } catch (e) {
+        // Safe fallback
+      } finally {
+        setIsAuthLoading(false);
       }
-      setIsAuthLoading(false);
-    });
+    }
 
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [setIsAuthenticated, setUser]);
+    checkAuthSession();
+  }, [setIsAuthenticated, setViewMode, setUser]);
 
   // Triggered when user wants to start fresh onboarding
   const handleStartOnboarding = (initialData = {}) => {
@@ -89,8 +104,65 @@ export const App = () => {
     );
   }
 
-  // If user is currently running the 6-Step Onboarding Wizard
-  if (isOnboarding || (!user?.onboardingCompleted && isAuthenticated && false)) {
+  // Direct Login & Sign Up Page when unauthenticated
+  if (!isAuthenticated) {
+    return (
+      <LoginPage 
+        onLoginSuccess={(u) => {
+          setIsAuthenticated(true);
+          const emailLower = (u.email || '').toLowerCase();
+          const isSeededDemo = emailLower === 'rahul.python@edunexa.edu' || 
+                              emailLower === 'priya.fullstack@edunexa.edu' || 
+                              emailLower === 'arjun.ai@edunexa.edu';
+
+          // Zero-state initialization for newly registered accounts or incomplete profiles
+          if (!isSeededDemo && !u.onboardingCompleted) {
+            setUser({
+              id: u.id || `usr_${Date.now()}`,
+              name: u.name || u.email?.split('@')[0] || 'New Student',
+              email: u.email || '',
+              role: u.role || 'STUDENT',
+              education: 'Undergraduate (B.Tech / B.E / B.Sc / BCA)',
+              college: '',
+              degree: '',
+              year: '3rd Year (Junior)',
+              interests: [],
+              currentSkills: [],
+              careerGoal: 'Full Stack Developer',
+              learningAvailability: '1 hour/day',
+              learningPreference: [],
+              streakDays: 0,
+              xpPoints: 0,
+              level: 1,
+              rank: 'Novice Learner (Level 1)',
+              weeklyGoalHours: 7,
+              completedHoursThisWeek: 0,
+              onboardingCompleted: false,
+              targetRoleDetail: {
+                title: 'General Computer Science & Skill Diagnostic Track',
+                readinessScore: 0,
+                marketDemand: 'High Demand 🔥',
+                avgSalary: '$115,000 / ₹20 LPA',
+              },
+            });
+            setOnboardingInitialData({ name: u.name, email: u.email });
+            setIsOnboarding(true);
+          } else {
+            setUser((prev: any) => ({
+              ...prev,
+              name: u.name || prev.name,
+              email: u.email || prev.email,
+              role: u.role || prev.role || 'STUDENT',
+            }));
+            setViewMode('app');
+          }
+        }} 
+      />
+    );
+  }
+
+  // Onboarding Wizard
+  if (isOnboarding && !user?.onboardingCompleted) {
     return (
       <OnboardingWizard 
         initialData={onboardingInitialData} 
@@ -99,23 +171,7 @@ export const App = () => {
     );
   }
 
-  // If not authenticated, show Login & Signup Page
-  if (!isAuthenticated) {
-    return (
-      <LoginPage 
-        onLoginSuccess={(u) => {
-          setIsAuthenticated(true);
-          setUser((prev: any) => ({
-            ...prev,
-            name: u.user_metadata?.full_name || u.email?.split('@')[0] || 'Learner',
-            email: u.email || '',
-          }));
-        }} 
-      />
-    );
-  }
-
-  // Render current active tab component out of 14 modules
+  // Main App Shell
   const renderActiveModule = () => {
     switch (activeTab) {
       case 'dashboard':
@@ -132,8 +188,12 @@ export const App = () => {
         return <LearnCoursePlayer />;
       case 'ai-mentor':
         return <AiMentorChat />;
+      case 'live-mentor':
+        return <LiveMentorInteraction />;
       case 'practice-lab':
         return <PracticeLab />;
+      case 'animation-study':
+        return <AnimationStudy />;
       case 'projects':
         return <ProjectsHub />;
       case 'progress':
@@ -142,8 +202,6 @@ export const App = () => {
         return <AchievementsView />;
       case 'study-planner':
         return <StudyPlanner />;
-      case 'explore-resources':
-        return <ExploreResources />;
       case 'my-profile':
         return <MyProfile onReplayOnboarding={() => setIsOnboarding(true)} />;
       default:
@@ -152,8 +210,8 @@ export const App = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#f8fafc] text-slate-800 overflow-hidden font-sans">
-      {/* 14-Module Sidebar Navigation (edunexa 1 UI) */}
+    <div className="flex h-screen bg-[#f8fafc] text-slate-800 overflow-hidden font-sans relative">
+      {/* Sidebar Navigation */}
       <Sidebar 
         isOpen={isSidebarOpen} 
         onClose={() => setIsSidebarOpen(false)} 
@@ -172,9 +230,12 @@ export const App = () => {
         </main>
       </div>
 
+      {/* JARVIS Floating AI Chatbot Assistant Sphere Ball & Inbox */}
+      <JarvisAiAssistant />
+
       {/* Floating Toast Alerts */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="fixed bottom-6 left-6 z-50 animate-in fade-in slide-in-from-bottom-5 duration-200">
           <div className="bg-slate-900/95 backdrop-blur-md text-white px-4 py-3 rounded-2xl shadow-xl border border-slate-700 flex items-center gap-3 max-w-md">
             {toastMessage.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />}
             {toastMessage.type === 'error' && <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />}

@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 export const SkillAssessment = () => {
-  const { ASSESSMENTS, addXP, showToast, setActiveTab, setUser } = useApp();
+  const { ASSESSMENTS, addXP, showToast, setActiveTab, setUser, updateSkillScoreAndAdaptRoadmap } = useApp();
   const [activeQuiz, setActiveQuiz] = useState(null);
   const [currentQIdx, setCurrentQIdx] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -68,23 +68,27 @@ export const SkillAssessment = () => {
     
     addXP(earnedXP, `Assessment Result: ${percentage}%`);
 
-    // Dynamically update user skill score based on quiz category
-    setUser(prev => ({
-      ...prev,
-      currentSkills: prev.currentSkills.map(sk => {
-        if (sk.name.toLowerCase().includes(activeQuiz.category.toLowerCase())) {
-          const updatedScore = Math.max(sk.score, percentage);
-          return {
-            ...sk,
-            score: updatedScore,
-            level: updatedScore > 80 ? 'Advanced' : updatedScore > 50 ? 'Intermediate' : 'Beginner'
-          };
-        }
-        return sk;
-      })
-    }));
-
-    showToast(`Test completed! Scored ${percentage}% (${correctCount}/${activeQuiz.questions.length})`, 'success');
+    // Execute Adaptive Engine: Recalculate Skill Gaps & Adapt Roadmap
+    if (updateSkillScoreAndAdaptRoadmap) {
+      updateSkillScoreAndAdaptRoadmap(activeQuiz.category, percentage);
+    } else {
+      // Dynamically update user skill score based on quiz category
+      setUser(prev => ({
+        ...prev,
+        currentSkills: prev.currentSkills.map(sk => {
+          if (sk.name.toLowerCase().includes(activeQuiz.category.toLowerCase())) {
+            const updatedScore = Math.max(sk.score, percentage);
+            return {
+              ...sk,
+              score: updatedScore,
+              level: updatedScore > 80 ? 'Advanced' : updatedScore > 50 ? 'Intermediate' : 'Beginner'
+            };
+          }
+          return sk;
+        })
+      }));
+      showToast(`Test completed! Scored ${percentage}% (${correctCount}/${activeQuiz.questions.length})`, 'success');
+    }
   };
 
   const formatTime = (secs) => {

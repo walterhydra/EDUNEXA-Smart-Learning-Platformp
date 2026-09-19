@@ -123,7 +123,6 @@ export const DashboardPage: React.FC<DashboardProps> = ({ user, onLogout }) => {
     { id: 'progress', label: 'My Progress', icon: LineChart },
     { id: 'achievements', label: 'Achievements', icon: Trophy },
     { id: 'study_planner', label: 'Study Planner', icon: Calendar },
-    { id: 'explore', label: 'Explore Resources', icon: Search },
     { id: 'profile', label: 'My Profile', icon: User },
   ];
 

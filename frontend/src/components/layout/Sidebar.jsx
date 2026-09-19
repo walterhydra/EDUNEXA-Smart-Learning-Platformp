@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
+import logoImg from '../../assets/logo.jpeg';
 import { 
   Home, 
   Compass, 
@@ -8,6 +9,7 @@ import {
   BarChart3, 
   BookOpen, 
   Bot, 
+  Video,
   Code2, 
   Rocket, 
   TrendingUp, 
@@ -18,7 +20,7 @@ import {
   Sparkles,
   ChevronRight,
   LogOut,
-  Zap
+  Tv
 } from 'lucide-react';
 
 export const NAV_ITEMS = [
@@ -29,12 +31,13 @@ export const NAV_ITEMS = [
   { id: 'skill-gap', label: 'Skill Gap', icon: BarChart3, badge: 'Live', category: 'Skill & Learn' },
   { id: 'learn', label: 'Learn', icon: BookOpen, badge: null, category: 'Skill & Learn' },
   { id: 'ai-mentor', label: 'AI Mentor', icon: Bot, badge: 'NexaAI', category: 'Hands-On' },
+  { id: 'live-mentor', label: 'Live Mentor Room', icon: Video, badge: '🟢 1-on-1', category: 'Hands-On' },
   { id: 'practice-lab', label: 'Practice Lab', icon: Code2, badge: 'Interactive', category: 'Hands-On' },
+  { id: 'animation-study', label: 'Animation Study', icon: Tv, badge: 'Visual 3D', category: 'Hands-On' },
   { id: 'projects', label: 'Projects', icon: Rocket, badge: '3 New', category: 'Hands-On' },
   { id: 'progress', label: 'My Progress', icon: TrendingUp, badge: null, category: 'Performance' },
   { id: 'achievements', label: 'Achievements', icon: Award, badge: '3 Unlocked', category: 'Performance' },
   { id: 'study-planner', label: 'Study Planner', icon: Calendar, badge: 'Today', category: 'Performance' },
-  { id: 'explore-resources', label: 'Explore Resources', icon: Search, badge: null, category: 'General' },
   { id: 'my-profile', label: 'My Profile', icon: User, badge: null, category: 'General' },
 ];
 
@@ -57,15 +60,21 @@ export const Sidebar = ({ isOpen, onClose }) => {
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         {/* Brand Header */}
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="p-3.5 border-b border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
             <img 
-              src="/logo.png" 
+              src={logoImg} 
               alt="EduNexa Logo" 
-              className="h-9 w-auto max-w-[145px] object-contain rounded-lg"
+              className="h-10 w-10 object-contain mix-blend-multiply"
             />
+            <div className="flex flex-col">
+              <span className="text-lg font-black text-slate-900 tracking-tight font-satoshi flex items-center">
+                Edu<span className="text-indigo-600">Nexa</span>
+              </span>
+              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-satoshi">Smart Learning</span>
+            </div>
           </div>
-          <span className="text-[10px] font-bold px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-md border border-indigo-100">
+          <span className="text-[10px] font-bold px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-md border border-indigo-100 font-satoshi">
             v2.4
           </span>
         </div>
@@ -75,7 +84,7 @@ export const Sidebar = ({ isOpen, onClose }) => {
           <div className="flex items-center justify-between text-[11px]">
             <span className="text-slate-500 font-medium">Target Role:</span>
             <span className="font-bold text-indigo-700 truncate max-w-[120px]">
-              {user.careerGoal || 'Full Stack Dev'}
+              {user?.careerGoal || 'Full Stack Dev'}
             </span>
           </div>
           <div className="mt-2 flex items-center justify-between text-[10px]">
@@ -131,13 +140,13 @@ export const Sidebar = ({ isOpen, onClose }) => {
           <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white border border-slate-200/80">
             <div className="flex items-center gap-2.5 min-w-0">
               <img 
-                src={user.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"} 
-                alt={user.name} 
+                src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"} 
+                alt={user?.name || "Student"} 
                 className="w-8 h-8 rounded-xl object-cover border border-slate-200 shrink-0"
               />
               <div className="min-w-0">
-                <p className="text-xs font-bold text-slate-800 truncate">{user.name || 'Student'}</p>
-                <p className="text-[10px] text-slate-400 truncate">Lvl {user.level || 4} • {user.xpPoints || 3420} XP</p>
+                <p className="text-xs font-bold text-slate-800 truncate">{user?.name || 'Student'}</p>
+                <p className="text-[10px] text-slate-400 truncate">Lvl {user?.level || 4} • {user?.xpPoints || 3420} XP</p>
               </div>
             </div>
             <button

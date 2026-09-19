@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+model User {
+  id           String         @id @default(uuid())
+  email        String         @unique
+  passwordHash String
+  role         Role           @default(STUDENT)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  profile           Profile?
+  refreshTokens     RefreshToken[]
+  assessments       Assessment[]
+  skillRequirements SkillRequirement[]
+  learningRules     LearningRule[]
+  assignments       Assignment[]
+  performanceData   PerformanceData?
+
+  @@map("users")
+}
+
+model Profile {
+  id                   String   @id @default(uuid())
+  userId               String   @unique
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name                 String
+  education            String?
+  institution          String?
+  degree               String?
+  year                 String?
+  interests            String[] @default([])
+  targetTrack          String   @default("Full Stack Development")
+  weeklyLearningHours  Int      @default(5)
+  onboardingCompleted  Boolean  @default(true)
+
+  // Real-Time Student Progress Metrics
+  streakDays           Int      @default(7)
+  xpPoints             Int      @default(3440)
+  rank                 String   @default("Bronze Scholar")
+  dailyPace            String   @default("1 hour/day")
+  readinessScore       Int      @default(64)
+  lastActiveDate       DateTime @default(now())
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+model Assessment {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  subject     String
+  score       Int
+  totalMarks  Int      @default(100)
+  level       String
+  weakAreas   String[] @default([])
+  strongAreas String[] @default([])
+  evaluatedAt DateTime @default(now())
+
+  @@map("assessments")
+}
+
+model SkillRequirement {
+  id                  String   @id @default(uuid())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skillName           String
+  category            String
+  currentProficiency  Int
+  requiredProficiency Int
+  status              String
+
+  @@map("skill_requirements")
+}
+
+model LearningRule {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  condition      String
+  recommendation String
+  actionItem     String
+  appliedStatus  String   @default("ACTIVE")
+
+  @@map("learning_rules")
+}
+
+model Assignment {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  subject     String
+  description String
+  difficulty  String
+  dueDate     DateTime
+  status      String   @default("PENDING")
+  xpReward    Int      @default(100)
+
+  @@map("assignments")
+}
+
+model PerformanceData {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  overallAccuracy   Float    @default(75.0)
+  completedLabs     Int      @default(0)
+  totalLabsAssigned  Int      @default(5)
+  recommendedTrack  String
+  decisionReason    String
+
+  @@map("performance_data")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@map("refresh_tokens")
+}
